@@ -9,10 +9,11 @@
 #include <stdio.h>
 #include <unistd.h>
 #include "rawSocket.h"
+#include "aux.h"
 
 int main(){
     int Soquete, num=0;
-    char inMessage[20];
+    Package inMessage;
     char hello[] = "Hello from server\n";
     Soquete = ConexaoRawSocket("lo");
     if (Soquete == -1)
@@ -22,23 +23,24 @@ int main(){
     }
 
     while(1){
-        if ((num = recv(Soquete, inMessage, 20*sizeof(char), 0)) < 0)
+        if ((num = recv(Soquete, &inMessage, sizeof(inMessage), 0)) < 0)
         {
             perror("Erro no recebimento!\n");
             exit(1);
         } 
-        if(inMessage[0] == 'H'){
-          printf("%s size: %d", inMessage, num);
+        if(inMessage.MarcadorInicio == 126){
+          printf("%d", inMessage.MarcadorInicio);
           break;
         }
+
            
     }
     
-      if(send(Soquete, hello, sizeof(hello),  0) < 0)
-      {
-          perror("erro no envio da mensagem !\n");
-          exit(1);
-      }
+    //   if(send(Soquete, hello, sizeof(hello),  0) < 0)
+    //   {
+    //       perror("erro no envio da mensagem !\n");
+    //       exit(1);
+    //   }
     
 
 
