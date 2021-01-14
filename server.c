@@ -11,7 +11,7 @@
 #include "rawSocket.h"
 
 int main(){
-    int Soquete;
+    int Soquete, num=0;
     char inMessage[20];
     char hello[] = "Hello from server\n";
     Soquete = ConexaoRawSocket("lo");
@@ -22,13 +22,13 @@ int main(){
     }
 
     while(1){
-        if (recv(Soquete, inMessage, 20*sizeof(char), 0) < 0)
+        if ((num = recv(Soquete, inMessage, 20*sizeof(char), 0)) < 0)
         {
             perror("Erro no recebimento!\n");
             exit(1);
         } 
         if(inMessage[0] == 'H'){
-          printf("%s", inMessage);
+          printf("%s size: %d", inMessage, num);
           break;
         }
            
