@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-
+#include "rawSocket.h"
 
 int ConexaoRawSocket(char *device)
 {
