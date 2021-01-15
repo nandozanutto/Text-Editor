@@ -11,26 +11,27 @@
 #include "aux.h"
 #include <time.h>
 
-void sendMessage(int Soquete, Package outMessage)
+int sendMessage(int Soquete, Package * outMessage)
 {
     
-    if(send(Soquete, &outMessage, sizeof(outMessage),  0) < 0)
+    if(send(Soquete, outMessage, sizeof(*outMessage),  0) < 0)
     {
           perror("erro no envio da mensagem !\n");
-          exit(1);
+          return -1;
     }
+    return 0;
 }
 
-Package waitForMessage(int Soquete, Package inMessage)
+int waitForMessage(int Soquete, Package * inMessage)
 {
     while(1){
-        if (recv(Soquete, &inMessage, sizeof(inMessage), 0) < 0)
+        if (recv(Soquete, inMessage, sizeof(*inMessage), 0) < 0)
         {
             perror("Erro no recebimento!\n");
-            exit(1);
+            return -1;
         }
-        if(inMessage.MarcadorInicio == 126){
-            return inMessage;
+        if(((*inMessage).MarcadorInicio == 126) && ((*inMessage).Origem == 01) ) {
+            return 0;
         }
     }
 }

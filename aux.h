@@ -16,8 +16,8 @@ typedef struct Package
     unsigned char Paridade;                 
 } Package;
 
-void sendMessage(int Soquete, Package outMessage);
-Package waitForMessage(int Soquete, Package inMessage);
+int sendMessage(int Soquete, Package * outMessage);
+int waitForMessage(int Soquete, Package * inMessage);
 int waitForAnswer();
 
 #endif
