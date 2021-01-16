@@ -16,6 +16,10 @@ int ConexaoRawSocket(char *device)
   struct sockaddr_ll endereco;
   struct packet_mreq mr;
 
+  struct timeval timeout;   //for timeout configuration   
+  timeout.tv_sec = 1;
+  timeout.tv_usec = 0;
+
   soquete = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));  	/*cria socket*/
   if (soquete == -1) {
     printf("Erro no Socket\n");
@@ -45,6 +49,11 @@ int ConexaoRawSocket(char *device)
   mr.mr_type = PACKET_MR_PROMISC;
   if (setsockopt(soquete, SOL_PACKET, PACKET_ADD_MEMBERSHIP, &mr, sizeof(mr)) == -1)	{
     printf("Erro ao fazer setsockopt\n");
+    exit(-1);
+  }
+
+  if (setsockopt (soquete, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout)) < 0) { //setting the timeout
+    printf("tiemer failed\n");
     exit(-1);
   }
  

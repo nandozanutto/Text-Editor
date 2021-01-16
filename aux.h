@@ -7,6 +7,8 @@
 
 int sendMessage(int Soquete, Package * outMessage);
 int waitForMessage(int Soquete, Package * inMessage);
-int waitForAnswer(int Soquete, Package * inMessage, unsigned char origemExpect);
+int waitForAnswer(int Soquete, Package * inMessage, int origemExpect);
+// int waitForAnswer();
+// int waitForAnswer(int Soquete, Package * inMessage);
 
 #endif
