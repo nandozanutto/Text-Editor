@@ -8,6 +8,7 @@
 #include <string.h>
 #include <stdio.h>
 #include "rawSocket.h"
+#include "createMessage.h"
 #include "aux.h"
 #include <time.h>
 
@@ -36,14 +37,28 @@ int waitForMessage(int Soquete, Package * inMessage)
     }
 }
 
-int waitForAnswer()
+int waitForAnswer(int Soquete, Package * inMessage, unsigned char origemExpect)
 {
-    clock_t i, f;
-    i = clock();
-    f = 0;
-    while(1){
-        if(( ((double)(f-i))/CLOCKS_PER_SEC) > 1.0)
-            return -1;
-        f = clock();
+    
+    if (recv(Soquete, inMessage, sizeof(*inMessage), 0) < 0)
+    {
+        perror("Erro no recebimento!\n");
+        return -1;
     }
+    if(((*inMessage).MarcadorInicio == 126) && ((*inMessage).Origem == origemExpect) ) {
+        return 0;
+    }
+    return -2;
 }
+
+// int waitForAnswer()
+// {
+//     clock_t i, f;
+//     i = clock();
+//     f = 0;
+//     while(1){
+//         if(( ((double)(f-i))/CLOCKS_PER_SEC) > 1.0)
+//             return -1;
+//         f = clock();
+//     }
+// }

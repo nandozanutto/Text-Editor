@@ -4,14 +4,16 @@
 #include <unistd.h>
 #include "rawSocket.h"
 #include "aux.h"
+#include "createMessage.h"
+
 
 int main(){
     int Soquete;
     Package outMessage, inMessage;
     Soquete = ConexaoRawSocket("lo");
+    
     outMessage.MarcadorInicio = (char) 0x7e;
     memset(inMessage.Dados, 0, 15);
-
     if (Soquete == -1)
     {
         perror("Erro no soquete\n");
@@ -19,6 +21,7 @@ int main(){
     }
 
     waitForMessage(Soquete, &inMessage);
+    // waitForAnswer(Soquete, &inMessage, (char) 01);
     printf("Data received: %d\n", inMessage.Dados[0]);
 
 

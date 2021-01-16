@@ -1,23 +1,12 @@
 #include <stdio.h>
 #include <string.h>
+#include "createMessage.h"
 
 #ifndef __AUX__
 #define __AUX__
 
-typedef struct Package
-{
-    unsigned char MarcadorInicio;           
-    unsigned char Destino : 2;
-    unsigned char Origem : 2;              
-    unsigned char Tamanho : 4;                
-    unsigned char Sequencia : 4;               
-    unsigned char Tipo : 4;
-    unsigned char Dados[15];                
-    unsigned char Paridade;                 
-} Package;
-
 int sendMessage(int Soquete, Package * outMessage);
 int waitForMessage(int Soquete, Package * inMessage);
-int waitForAnswer();
+int waitForAnswer(int Soquete, Package * inMessage, unsigned char origemExpect);
 
 #endif
