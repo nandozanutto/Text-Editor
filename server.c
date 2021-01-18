@@ -29,10 +29,12 @@ int cdServer(int Soquete, Package inMessage){
   if(chdir(inMessage.Dados) < 0){
       perror("Erro no comando CD!\n");
       sendError(Soquete, errno, 'S');
+      return -1;
     }
   
   printf("%s\n", getcwd(s, 100)); 
   sendACK(Soquete, 'S');
+  return 0;
 
 }
 
@@ -57,7 +59,11 @@ void serverBehavior(int Soquete){
   {
       sendError(Soquete, reply, 'S');
   }
-   
+  
+  // recv(Soquete, &inMessage, sizeof(inMessage), 0); 
+  // recv(Soquete, &inMessage, sizeof(inMessage), 0); 
+
+
 }
 
 
@@ -78,8 +84,10 @@ int main(){
         exit(1);
     }
     
-    serverBehavior(Soquete);
-
+    while(1){
+      serverBehavior(Soquete);
+      
+    }
   return 0;
 
 }

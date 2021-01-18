@@ -11,6 +11,7 @@ void assignMessage(Package * outMessage, char origem, unsigned char *data, int p
     (*outMessage).Tamanho = sizeof(data);
     (*outMessage).Sequencia = sequencia;
     (*outMessage).Tipo = tipo;
+    memset((*outMessage).Dados, 0, 15);//putting zeros
     strcpy((*outMessage).Dados, data);
     (*outMessage).Paridade = paridade;
 
