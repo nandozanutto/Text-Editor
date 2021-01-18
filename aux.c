@@ -79,7 +79,6 @@ int waitForAnswer(int Soquete, Package * inMessage, int origemExpect)
             }
         }
         if(((*inMessage).MarcadorInicio == 126) && ((*inMessage).Origem == origemExpect)){ 
-            printf("yesss");
             return 0;
         }
     }
