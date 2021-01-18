@@ -15,6 +15,39 @@
 
 extern int errno ;
 
+int errorMessage(Package inMessage){
+    return 0;
+}
+
+int sendError(int Soquete, int numError, char origem){
+    Package outMessage;
+    unsigned char dados[15];
+    memset(dados, 0, 15);
+    dados[0] = numError;
+    
+    if(numError > 255) return -1;
+    assignMessage(&outMessage, origem, dados, 0, 15, 0);
+    sendMessage(Soquete, &outMessage);
+}
+
+int sendACK(int Soquete, char origem){
+    Package outMessage;
+    unsigned char dados[15];
+    memset(dados, 0, 15);
+
+    assignMessage(&outMessage, origem, dados, 0, 8, 0);
+    sendMessage(Soquete, &outMessage);
+}
+
+int sendNACK(int Soquete, char origem){
+    Package outMessage;
+    unsigned char dados[15];
+    memset(dados, 0, 15);
+
+    assignMessage(&outMessage, origem, dados, 0, 9, 0);
+    sendMessage(Soquete, &outMessage);
+}
+
 int sendMessage(int Soquete, Package * outMessage)
 {
     
@@ -35,7 +68,7 @@ int waitForMessage(int Soquete, Package * inMessage)
             errnum = errno; //added
             if(errnum != 11){
                 perror("Erro no recebimento!\n");
-                return -1;
+                return errnum;
             }
         }
         if(((*inMessage).MarcadorInicio == 126) && ((*inMessage).Origem == 01) ) {

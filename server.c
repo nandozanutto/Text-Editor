@@ -12,19 +12,27 @@
 #include <sys/types.h>
 #include <sys/ioctl.h>
 #include <linux/if.h>
+#include <errno.h>
+extern int errno ;
 
-void cdServer(int Soquete, Package inMessage){
+
+int cdServer(int Soquete, Package inMessage){
   Package outMessage;
-  //Doing some server stuff here
-  unsigned char dados[15];
-  memset(dados, 0, 15);
-  dados[0] = 0xff;
+  char s[100]; 
+  printf("%s\n", getcwd(s, 100)); 
 
+  if(errorMessage(inMessage) < 0){
+    sendNACK(Soquete, 'S');
+    return -1;
+  }
   
-  assignMessage(&outMessage, 'S', dados, 10, 0, 1);
-  sendMessage(Soquete, &outMessage); 
-  printf("Data received from client: %d\n", inMessage.Dados[0]);
-  printf("Data send to client: %d\n", outMessage.Dados[0]); 
+  if(chdir(inMessage.Dados) < 0){
+      perror("Erro no comando CD!\n");
+      sendError(Soquete, errno, 'S');
+    }
+  
+  printf("%s\n", getcwd(s, 100)); 
+  sendACK(Soquete, 'S');
 
 }
 
@@ -47,7 +55,7 @@ void serverBehavior(int Soquete){
   }
   else
   {
-    printf("error...");
+      sendError(Soquete, reply, 'S');
   }
    
 }
