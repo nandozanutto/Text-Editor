@@ -21,19 +21,19 @@ int cdServer(int Soquete, Package inMessage){
   char s[100]; 
   printf("%s\n", getcwd(s, 100)); 
 
-  if(errorMessage(inMessage) < 0){
+  if(errorMessage(inMessage) < 0){//NACK
     sendNACK(Soquete, 'S');
     return -1;
   }
   
-  if(chdir(inMessage.Dados) < 0){
+  if(chdir(inMessage.Dados) < 0){ //ERROR
       perror("Erro no comando CD!\n");
       sendError(Soquete, errno, 'S');
       return -1;
     }
   
   printf("%s\n", getcwd(s, 100)); 
-  sendACK(Soquete, 'S');
+  sendACK(Soquete, 'S');//ACK
   return 0;
 
 }
@@ -57,12 +57,9 @@ void serverBehavior(int Soquete){
   }
   else
   {
-      sendError(Soquete, reply, 'S');
+      sendError(Soquete, reply, 'S'); //ERROR ON SERVER RCV
   }
   
-  // recv(Soquete, &inMessage, sizeof(inMessage), 0); 
-  // recv(Soquete, &inMessage, sizeof(inMessage), 0); 
-
 
 }
 
@@ -72,12 +69,6 @@ int main(){
     Package outMessage, inMessage;
     Soquete = ConexaoRawSocket("lo");
     
-
-    unsigned char dados[15];
-    memset(dados, 0, 15);
-    dados[0] = 0xff;
-
-
     if (Soquete == -1)
     {
         perror("Erro no soquete\n");
@@ -86,6 +77,7 @@ int main(){
     
     while(1){
       serverBehavior(Soquete);
+      recv(Soquete, &inMessage, sizeof(inMessage), 0); 
       
     }
   return 0;

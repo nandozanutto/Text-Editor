@@ -17,16 +17,17 @@ int cdClient(int Soquete, unsigned char * inputString){
         sendMessage(Soquete, &outMessage);
         printf("Data sent: '%s'\n", outMessage.Dados);
         reply = waitForAnswer(Soquete, &inMessage, 2);
-        if(reply == 0 && inMessage.Tipo == 8){
+        if(reply == 0 && inMessage.Tipo == 8){//ACK
             printf("Success\n");
             return 0;
         }
-        if(reply == 0 && inMessage.Tipo == 15){
+        if(reply == 0 && inMessage.Tipo == 15){//ERROR
             printf("Error on server, %s\n", strerror(inMessage.Dados[0]));
             return -1;
         }
-        if(reply == 0 && inMessage.Tipo == 9)
+        if(reply == 0 && inMessage.Tipo == 9)//NACK
             printf("Nack received");
+        
     }
     
 }
