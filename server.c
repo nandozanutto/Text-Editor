@@ -38,6 +38,24 @@ int cdServer(int Soquete, Package inMessage){
 
 }
 
+int linhaServer(int Soquete, Package inMessage1){
+  Package inMessage;
+
+  if(errorMessage(inMessage1) < 0){//NACK
+    sendNACK(Soquete, 'S');
+    return -1;
+  } else {
+    sendACK(Soquete, 'S');//ACK
+  }
+  recv(Soquete, &inMessage, sizeof(inMessage), 0);
+  waitForMessage(Soquete, &inMessage);
+  printf("%s", inMessage.Dados);
+  printf("%s", (char *) 15);
+
+}
+
+
+
 void serverBehavior(int Soquete){
   Package inMessage, outMessage;
   int reply = waitForMessage(Soquete, &inMessage);
@@ -46,8 +64,12 @@ void serverBehavior(int Soquete){
     switch (inMessage.Tipo)
     {
       
-      case 5:
+      case 0:
         cdServer(Soquete, inMessage);
+        break;
+      
+      case 3:
+        linhaServer(Soquete, inMessage);
         break;
       
       default:
@@ -75,11 +97,15 @@ int main(){
         exit(1);
     }
     
-    while(1){
-      serverBehavior(Soquete);
-      recv(Soquete, &inMessage, sizeof(inMessage), 0); 
-      
-    }
+    // while(1){
+    //   serverBehavior(Soquete);
+    //   recv(Soquete, &inMessage, sizeof(inMessage), 0); 
+    // }
+
+    serverBehavior(Soquete);
+
+
+
   return 0;
 
 }

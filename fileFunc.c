@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#define BUFFER_SIZE 1000
+#define BUFFER_SIZE 2000
 
 int goLine(FILE *file, int num){
     char line[BUFFER_SIZE]; //attention to maximum line size
@@ -89,26 +89,5 @@ int editLine(char * path, char * newline, int line){
     rename("replace.tmp", path);
 
     printf("\nSuccessfully replaced '%d' line with '%s'.", line, newline);
-
-}
-
-
-int main(){
-    
-    int lineNumber = 5;
-    char path[] = "alice.txt";
-    char c;
-    int count=0;
-    unsigned char str[15];
-    const char ch = '\n';
-    FILE *file;
-
-
-    file  = fopen(path, "r+");
-    if(file == NULL) return 0;
-    
-
-
-    return 0;    
 
 }
