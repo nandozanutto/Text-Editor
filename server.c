@@ -39,18 +39,47 @@ int cdServer(int Soquete, Package inMessage){
 }
 
 int linhaServer(int Soquete, Package inMessage1){
-  Package inMessage;
+  Package inMessage, outMessage;
+  copyMessage(&inMessage1, &inMessage);
+  int reply = 0;
 
-  if(errorMessage(inMessage1) < 0){//NACK
-    sendNACK(Soquete, 'S');
-    return -1;
-  } else {
-    sendACK(Soquete, 'S');//ACK
+  puts(inMessage.Dados);
+  
+  while(1){  
+    //2 MESSAGE: reply
+    if(errorMessage(inMessage) < 0){//NACK
+      sendNACK(Soquete, 'S');
+    } else {
+      sendACK(Soquete, 'S');//ACK
+    }
+    reply = waitForMessage(Soquete, &inMessage, 1);
+    if(reply!=0){ 
+      sendError(Soquete, reply, 'S');
+      return -1;
+    }
+    if(inMessage.Tipo == 10)
+      break;
   }
-  recv(Soquete, &inMessage, sizeof(inMessage), 0);
-  waitForMessage(Soquete, &inMessage);
-  printf("%s", inMessage.Dados);
-  printf("%s", (char *) 15);
+
+  puts(inMessage.Dados);
+
+
+  assignMessage(&outMessage, 'S', "First text message", 0, 12, 0);
+  while(1){  
+    //4 MESSAGE: reply with text or NACK
+    if(errorMessage(inMessage) < 0){//NACK
+      sendNACK(Soquete, 'S');
+    } else {
+        sendMessage(Soquete, &outMessage);//FIRST TEXT AS AN ACK
+    }
+    waitForMessage(Soquete, &inMessage, 1);
+    if(inMessage.Tipo == 8)//ACK RECEIVED
+      break;
+  }
+  printf("ACK\n");
+
+  // assignMessage(&outMessage, 'S', "Second text message", 0, 12, 1);
+  // sendMessage(Soquete, &outMessage);
 
 }
 
@@ -58,7 +87,7 @@ int linhaServer(int Soquete, Package inMessage1){
 
 void serverBehavior(int Soquete){
   Package inMessage, outMessage;
-  int reply = waitForMessage(Soquete, &inMessage);
+  int reply = waitForMessage(Soquete, &inMessage, 1);
   if(!reply){
     
     switch (inMessage.Tipo)
@@ -91,6 +120,8 @@ int main(){
     Package outMessage, inMessage;
     Soquete = ConexaoRawSocket("lo");
     
+    setvbuf (stdout, 0, _IONBF, 0);
+
     if (Soquete == -1)
     {
         perror("Erro no soquete\n");
@@ -99,13 +130,15 @@ int main(){
     
     // while(1){
     //   serverBehavior(Soquete);
-    //   recv(Soquete, &inMessage, sizeof(inMessage), 0); 
     // }
 
     serverBehavior(Soquete);
 
 
-
+    // while(1){
+    //   waitForMessage(Soquete, &inMessage, 1);
+    //   puts(inMessage.Dados);
+    // }
   return 0;
 
 }

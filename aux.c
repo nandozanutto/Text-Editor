@@ -51,7 +51,7 @@ int sendNACK(int Soquete, char origem){
 int sendMessage(int Soquete, Package * outMessage)
 {
     
-    if(send(Soquete, outMessage, sizeof(*outMessage),  0) < 0)
+    if(send(Soquete, outMessage, sizeof(Package),  0) < 0)
     {
           perror("erro no envio da mensagem !\n");
           return -1;
@@ -59,11 +59,13 @@ int sendMessage(int Soquete, Package * outMessage)
     return 0;
 }
 
-int waitForMessage(int Soquete, Package * inMessage)
+int waitForMessage(int Soquete, Package * inMessage, int origemExpect)
 {
+    Package duplicate;
+    resetMessage(inMessage);//Reset to receive a new one
     int errnum;//added
     while(1){
-        if (recv(Soquete, inMessage, sizeof(*inMessage), 0) < 0)
+        if (recv(Soquete, inMessage, sizeof(Package), 0) < 0)
         {
             errnum = errno; //added
             if(errnum != 11){
@@ -71,39 +73,23 @@ int waitForMessage(int Soquete, Package * inMessage)
                 return errnum;
             }
         }
-        if(((*inMessage).MarcadorInicio == 126) && ((*inMessage).Origem == 01) ) {
+        if(((*inMessage).MarcadorInicio == 126) && ((*inMessage).Origem == origemExpect) ) {
+            recv(Soquete, &duplicate, sizeof(Package), 0); //Ignoring duplicate message
             return 0;
         }
     }
 }
 
-// int waitForAnswer(int Soquete, Package * inMessage, int origemExpect)
-// {
-//     int errnum;//added
-    
-//     if (recv(Soquete, inMessage, sizeof(*inMessage), 0) < 0)
-//     {
-//         errnum = errno; //added
-//         if(errnum != 11){
-//             perror("Erro no recebimento!\n");
-//             return -1;
-//         }
-//     }
-//     if(((*inMessage).MarcadorInicio == 126) && ((*inMessage).Origem == origemExpect) ) {
-//         return 0;
-//     }
-
-//     return 1;
-// }
-
 int waitForAnswer(int Soquete, Package * inMessage, int origemExpect)
 {
+    Package duplicate;
+    resetMessage(inMessage);//Reset to receive a new one
     int errnum;//added
     time_t i, f;
     i = time(NULL);
     f = 0;
     while( (time(NULL) - i) < 2 ){
-        if (recv(Soquete, inMessage, sizeof(*inMessage), 0) < 0)
+        if (recv(Soquete, inMessage, sizeof(Package), 0) < 0)
         {
             errnum = errno; //added
             if(errnum != 11){
@@ -112,6 +98,7 @@ int waitForAnswer(int Soquete, Package * inMessage, int origemExpect)
             }
         }
         if(((*inMessage).MarcadorInicio == 126) && ((*inMessage).Origem == origemExpect)){ 
+            recv(Soquete, &duplicate, sizeof(Package), 0); //Ignoring duplicate message            
             return 0;
         }
     }

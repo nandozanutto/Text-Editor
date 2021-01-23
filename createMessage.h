@@ -17,5 +17,7 @@ typedef struct Package
 } Package;
 
 void assignMessage(Package * outMessage, char origem, unsigned char *data, int paridade, int tipo, int sequencia);
+void resetMessage(Package * inMessage);
+void copyMessage(Package * oriMessage, Package * destMessage);
 
 #endif
