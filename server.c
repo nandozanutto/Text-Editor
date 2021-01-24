@@ -5,6 +5,7 @@
 #include "rawSocket.h"
 #include "aux.h"
 #include "createMessage.h"
+#include "fileFunc.h"
 
 #include <linux/if_packet.h>
 #include <net/ethernet.h>
@@ -39,11 +40,15 @@ int cdServer(int Soquete, Package inMessage){
 }
 
 int linhaServer(int Soquete, Package inMessage1){
+  FILE *file;
   Package inMessage, outMessage;
   copyMessage(&inMessage1, &inMessage);
   int reply = 0;
+  int lineNumber=0;
+  unsigned char lineReading[15];
 
-  puts(inMessage.Dados);
+  puts(inMessage.Dados);//Name of file
+  file  = fopen(inMessage.Dados, "r");
   
   while(1){  
     //2 MESSAGE: reply
@@ -61,10 +66,13 @@ int linhaServer(int Soquete, Package inMessage1){
       break;
   }
 
-  puts(inMessage.Dados);
+  puts(inMessage.Dados);//Number of line
+  lineNumber = atoi(inMessage.Dados);
+  goLine(file, lineNumber);
+  readLine(file, lineReading);
 
 
-  assignMessage(&outMessage, 'S', "First text message", 0, 12, 0);
+  assignMessage(&outMessage, 'S', lineReading, 0, 12, 0);
   while(1){  
     //4 MESSAGE: reply with text or NACK
     if(errorMessage(inMessage) < 0){//NACK
@@ -76,10 +84,23 @@ int linhaServer(int Soquete, Package inMessage1){
     if(inMessage.Tipo == 8)//ACK RECEIVED
       break;
   }
-  printf("ACK\n");
-
-  // assignMessage(&outMessage, 'S', "Second text message", 0, 12, 1);
-  // sendMessage(Soquete, &outMessage);
+  
+  assignMessage(&outMessage, 'S', "Second message", 0, 12, 0);  
+  while(1){
+      /*MESSAGE 7: 1100
+      Keep sending message ultil ACK isn't received*/
+      sendMessage(Soquete, &outMessage);
+      printf("Data sent1: '%s'\n", outMessage.Dados);
+      reply = waitForAnswer(Soquete, &inMessage, 1);
+      if(reply == 0 && inMessage.Tipo == 8){//ACK
+          printf("Success\n");
+          break;
+      }
+      if(reply == 0 && inMessage.Tipo == 9)//NACK
+          printf("Nack received");
+      
+  }
+  
 
 }
 

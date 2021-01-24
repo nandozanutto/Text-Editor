@@ -5,6 +5,7 @@
 #include "aux.h"
 #include "createMessage.h"
 #include <errno.h>
+#include "fileFunc.h"
 
 #include <linux/if_packet.h>
 #include <net/ethernet.h>
@@ -39,7 +40,7 @@ int cdClient(int Soquete, unsigned char * inputString){
     
 }
 
-int linhaClient(int Soquete, unsigned char *inputString){
+int linhaClient(int Soquete, unsigned char *inputString, unsigned char *lineNumber){
     int reply=0;
     Package outMessage, inMessage;
     assignMessage(&outMessage, 'C', inputString, 10, 3, 0);
@@ -63,7 +64,7 @@ int linhaClient(int Soquete, unsigned char *inputString){
         
     }
 
-    assignMessage(&outMessage, 'C', "nando", 10, 10, 1);
+    assignMessage(&outMessage, 'C', lineNumber, 10, 10, 1);
     while (1)
     {
         /*MESSAGE 3: 1010
@@ -79,7 +80,7 @@ int linhaClient(int Soquete, unsigned char *inputString){
             printf("Nack received");
     }
 
-    puts(inMessage.Dados);
+    printf("%s", inMessage.Dados);
     
     while(1){  
         //MESSAGE 5: reply
@@ -88,12 +89,12 @@ int linhaClient(int Soquete, unsigned char *inputString){
         } else {
             sendACK(Soquete, 'C');//ACK
         }
-        waitForMessage(Soquete, &inMessage, 2);
+        waitForMessage(Soquete, &inMessage, 2);//Second text message
         if(inMessage.Tipo == 12)
             break;
     }
-    
-    puts(inMessage.Dados);
+    printf("%s", inMessage.Dados);
+    sendACK(Soquete, 'C');
 
 }
 
@@ -113,7 +114,7 @@ int main(){
         exit(1);
     }
 
-    linhaClient(Soquete, inputString);
+    linhaClient(Soquete, inputString, "9");
     // assignMessage(&outMessage, 'C', "nando", 0, 0, 0);
     // send(Soquete, &outMessage, sizeof(Package), 0);
     // assignMessage(&outMessage, 'C', "zanu", 0, 0, 0);
