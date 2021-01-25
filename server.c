@@ -43,8 +43,7 @@ int linhaServer(int Soquete, Package inMessage1){
   FILE *file;
   Package inMessage, outMessage;
   copyMessage(&inMessage1, &inMessage);
-  int reply = 0;
-  int lineNumber=0;
+  int reply=0, lineNumber=0, result=0;
   unsigned char lineReading[15];
 
   puts(inMessage.Dados);//Name of file
@@ -85,16 +84,33 @@ int linhaServer(int Soquete, Package inMessage1){
       break;
   }
   
-  assignMessage(&outMessage, 'S', "Second message", 0, 12, 0);  
-  while(1){
-      /*MESSAGE 7: 1100
+  while(1){   
+    result = readLine(file, lineReading);
+    if(result == -1) break;
+    assignMessage(&outMessage, 'S', lineReading, 0, 12, 0);  
+    while(1){
+        /*MESSAGE 7: 1100
+        Keep sending message ultil ACK isn't received*/
+        sendMessage(Soquete, &outMessage);
+        reply = waitForAnswer(Soquete, &inMessage, 1);
+        if(reply == 0 && inMessage.Tipo == 8){//ACK
+            break;
+        }
+        if(reply == 0 && inMessage.Tipo == 9)//NACK
+            printf("Nack received");
+        
+    }
+    if(result == -2) break;//line breaker
+  }
+    assignMessage(&outMessage, 'S', "", 0, 13, 0);
+    
+    while(1){
+      /*MESSAGE 1: 1101
       Keep sending message ultil ACK isn't received*/
       sendMessage(Soquete, &outMessage);
-      printf("Data sent1: '%s'\n", outMessage.Dados);
       reply = waitForAnswer(Soquete, &inMessage, 1);
       if(reply == 0 && inMessage.Tipo == 8){//ACK
-          printf("Success\n");
-          break;
+          return 0;
       }
       if(reply == 0 && inMessage.Tipo == 9)//NACK
           printf("Nack received");
