@@ -40,10 +40,10 @@ int cdClient(int Soquete, unsigned char * inputString){
     
 }
 
-int linhaClient(int Soquete, unsigned char *inputString, unsigned char *lineNumber){
+int linhaClient(int Soquete, unsigned char *inputString, unsigned char *lineNumber, int tipo){
     int reply=0;
     Package outMessage, inMessage;
-    assignMessage(&outMessage, 'C', inputString, 10, 3, 0);
+    assignMessage(&outMessage, 'C', inputString, 10, tipo, 0);
 
     while(1){
         /*MESSAGE 1: 0011
@@ -98,6 +98,10 @@ int linhaClient(int Soquete, unsigned char *inputString, unsigned char *lineNumb
     }
 }
 
+int linhasClient(int Soquete, unsigned char *inputString, unsigned char *lines){
+    linhaClient(Soquete, inputString, lines, 4);
+}
+
 int main(){
 
     int Soquete;
@@ -114,7 +118,7 @@ int main(){
         exit(1);
     }
 
-    linhaClient(Soquete, inputString, "144");
+    linhasClient(Soquete, inputString, "132 132");
 
 
     return 0;

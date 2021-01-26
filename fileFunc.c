@@ -24,6 +24,7 @@ int goLine(FILE *file, int num){
 }
 
 int readLine(FILE *file, unsigned char * str){
+    memset(str, 0, 15);//putting zeros
     const char ch = '\n';
     if(fgets (str, 15, file) == NULL)
         return -1;//didn't found any caracter

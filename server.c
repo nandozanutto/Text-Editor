@@ -120,6 +120,94 @@ int linhaServer(int Soquete, Package inMessage1){
 
 }
 
+int linhasServer(int Soquete, Package inMessage1){
+  FILE *file;
+  Package inMessage, outMessage;
+  copyMessage(&inMessage1, &inMessage);
+  int reply=0, lineNumber1=0, result=0, lineNumber2=0, count=0;
+  unsigned char lineReading[15];
+  char *token;
+  const char s[2] = " ";
+
+  puts(inMessage.Dados);//Name of file
+  file  = fopen(inMessage.Dados, "r");
+  
+  while(1){  
+    //2 MESSAGE: reply
+    if(errorMessage(inMessage) < 0){//NACK
+      sendNACK(Soquete, 'S');
+    } else {
+      sendACK(Soquete, 'S');//ACK
+    }
+    reply = waitForMessage(Soquete, &inMessage, 1);
+    if(reply!=0){ 
+      sendError(Soquete, reply, 'S');
+      return -1;
+    }
+    if(inMessage.Tipo == 10)
+      break;
+  }
+
+  token= strtok(inMessage.Dados, s);
+  lineNumber1 = atoi(token);
+  token = strtok(NULL, s);
+  lineNumber2 = atoi(token);
+  
+  // lineNumber = atoi(inMessage.Dados);
+  goLine(file, lineNumber1);
+  result = readLine(file, lineReading);
+  if(result == -2) count++;//line breaker  
+  assignMessage(&outMessage, 'S', lineReading, 0, 12, 0);
+  while(1){  
+    //4 MESSAGE: reply with text or NACK
+    if(errorMessage(inMessage) < 0){//NACK
+      sendNACK(Soquete, 'S');
+    } else {
+        sendMessage(Soquete, &outMessage);//FIRST TEXT AS AN ACK
+    }
+    waitForMessage(Soquete, &inMessage, 1);
+    if(inMessage.Tipo == 8)//ACK RECEIVED
+      break;
+  }
+
+  while(1){   
+    result = readLine(file, lineReading);
+    if(result == -1) break;
+    assignMessage(&outMessage, 'S', lineReading, 0, 12, 0);  
+    if(count == (lineNumber2-lineNumber1 + 1)) break;
+    if(result == -2) count++;//line breaker
+    while(1){
+        /*MESSAGE 7: 1100
+        Keep sending message ultil ACK isn't received*/
+        sendMessage(Soquete, &outMessage);
+        reply = waitForAnswer(Soquete, &inMessage, 1);
+        if(reply == 0 && inMessage.Tipo == 8){//ACK
+            break;
+        }
+        if(reply == 0 && inMessage.Tipo == 9)//NACK
+            printf("Nack received");
+        
+    }
+  }
+
+  assignMessage(&outMessage, 'S', "", 0, 13, 0);
+    
+    while(1){
+      /*MESSAGE 1: 1101
+      Keep sending message ultil ACK isn't received*/
+      sendMessage(Soquete, &outMessage);
+      reply = waitForAnswer(Soquete, &inMessage, 1);
+      if(reply == 0 && inMessage.Tipo == 8){//ACK
+          return 0;
+      }
+      if(reply == 0 && inMessage.Tipo == 9)//NACK
+          printf("Nack received");
+      
+  }
+
+
+
+}
 
 
 void serverBehavior(int Soquete){
@@ -138,6 +226,10 @@ void serverBehavior(int Soquete){
         linhaServer(Soquete, inMessage);
         break;
       
+      case 4:
+        linhasServer(Soquete, inMessage);
+        break;
+
       default:
         break;
     }
@@ -156,6 +248,9 @@ int main(){
     int Soquete;
     Package outMessage, inMessage;
     Soquete = ConexaoRawSocket("lo");
+    unsigned char inputString[15] = "127 15";
+    char *token;
+    const char s[2] = " ";
     
     setvbuf (stdout, 0, _IONBF, 0);
 
@@ -165,17 +260,15 @@ int main(){
         exit(1);
     }
     
-    // while(1){
-    //   serverBehavior(Soquete);
-    // }
+    // token= strtok(inputString, s);
+    // printf("%s\n", token );
+    // token = strtok(NULL, s);
+    // printf("%s\n", token );
 
     serverBehavior(Soquete);
 
 
-    // while(1){
-    //   waitForMessage(Soquete, &inMessage, 1);
-    //   puts(inMessage.Dados);
-    // }
+
   return 0;
 
 }
