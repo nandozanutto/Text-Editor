@@ -102,6 +102,55 @@ int linhasClient(int Soquete, unsigned char *inputString, unsigned char *lines){
     linhaClient(Soquete, inputString, lines, 4);
 }
 
+int verClient(int Soquete, unsigned char *inputString){
+    int reply=0, count=2;
+    Package outMessage, inMessage;
+    assignMessage(&outMessage, 'C', inputString, 10, 2, 0);
+
+    while(1){
+        /*MESSAGE 1: 0011
+        Keep sending message ultil ACK or error isn't received*/
+        sendMessage(Soquete, &outMessage);
+        reply = waitForAnswer(Soquete, &inMessage, 2);
+        if(reply == 0 && inMessage.Tipo == 12){//FIRST TEXT MESSAGE AS ACK
+            break;
+        }
+        if(reply == 0 && inMessage.Tipo == 15){//ERROR
+            printf("Error on server, %s\n", strerror(inMessage.Dados[0]));
+            return -1;
+        }
+        if(reply == 0 && inMessage.Tipo == 9)//NACK
+            printf("Nack received");
+        
+    }
+    printf("1-%s", inMessage.Dados);
+    while(1){
+        while(1){  
+            //MESSAGE 5: reply
+            if(errorMessage(inMessage) < 0){//NACK
+                sendNACK(Soquete, 'C');
+            } else {
+                sendACK(Soquete, 'C');//ACK
+            }
+            waitForMessage(Soquete, &inMessage, 2);
+            if(inMessage.Tipo == 12 || inMessage.Tipo == 13)
+                break;
+        }
+        if(inMessage.Tipo == 13){
+            sendACK(Soquete, 'C');
+            return 0;
+        }
+        if(strchr(inMessage.Dados, '\n')!=NULL){
+            printf("%s%d ", inMessage.Dados, count);
+            count++;
+        }else{
+            printf("%s", inMessage.Dados);
+        }
+    }
+
+
+}
+
 int main(){
 
     int Soquete;
@@ -118,7 +167,7 @@ int main(){
         exit(1);
     }
 
-    linhasClient(Soquete, inputString, "132 132");
+    verClient(Soquete, inputString);
 
 
     return 0;

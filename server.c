@@ -209,6 +209,74 @@ int linhasServer(int Soquete, Package inMessage1){
 
 }
 
+int verServer(int Soquete, Package inMessage1){
+  FILE *file;
+  Package inMessage, outMessage;
+  copyMessage(&inMessage1, &inMessage);
+  int reply=0, result=0, lineNumber2=0, count=0;
+  unsigned char lineReading[15];
+
+
+  puts(inMessage.Dados);//Name of file
+  file  = fopen(inMessage.Dados, "r");
+  
+  goLine(file, 1);
+  result = readLine(file, lineReading);
+  assignMessage(&outMessage, 'S', lineReading, 0, 12, 0);
+  
+  while(1){  
+    //2 MESSAGE: reply
+    if(errorMessage(inMessage) < 0){//NACK
+      sendNACK(Soquete, 'S');
+    } else {
+      sendMessage(Soquete, &outMessage);//first message as ACK
+    }
+    reply = waitForMessage(Soquete, &inMessage, 1);
+    if(reply!=0){ 
+      sendError(Soquete, reply, 'S');
+      return -1;
+    }
+    if(inMessage.Tipo == 8)//ACK RECEIVED
+      break;
+  }
+
+  while(1){   
+    result = readLine(file, lineReading);
+    if(result == -1) break;
+    assignMessage(&outMessage, 'S', lineReading, 0, 12, 0);  
+    while(1){
+        /*MESSAGE 7: 1100
+        Keep sending message ultil ACK isn't received*/
+        sendMessage(Soquete, &outMessage);
+        reply = waitForAnswer(Soquete, &inMessage, 1);
+        if(reply == 0 && inMessage.Tipo == 8){//ACK
+            break;
+        }
+        if(reply == 0 && inMessage.Tipo == 9)//NACK
+            printf("Nack received");
+        
+    }
+  }
+
+  assignMessage(&outMessage, 'S', "", 0, 13, 0);
+    
+  while(1){
+    /*MESSAGE 1: 1101
+    Keep sending message ultil ACK isn't received*/
+    sendMessage(Soquete, &outMessage);
+    reply = waitForAnswer(Soquete, &inMessage, 1);
+    if(reply == 0 && inMessage.Tipo == 8){//ACK
+        return 0;
+    }
+    if(reply == 0 && inMessage.Tipo == 9)//NACK
+        printf("Nack received");
+      
+  }
+
+
+
+
+}
 
 void serverBehavior(int Soquete){
   Package inMessage, outMessage;
@@ -222,6 +290,10 @@ void serverBehavior(int Soquete){
         cdServer(Soquete, inMessage);
         break;
       
+      case 2:
+        verServer(Soquete, inMessage);
+        break;
+
       case 3:
         linhaServer(Soquete, inMessage);
         break;
