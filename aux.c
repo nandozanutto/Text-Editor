@@ -106,3 +106,18 @@ int waitForAnswer(int Soquete, Package * inMessage, int origemExpect)
     return -2;//timeout. NO message or Wrong message received
 
 }
+
+int cutString(unsigned char * input, unsigned char *output, int num){
+    unsigned char * pt;
+    int size = strlen(input);
+    float aux = (float)size/14;
+    int result=0;
+
+    result = (aux > size/14) ? size/14+1 : size/14;
+    if(num>result) return -1;
+
+    pt = input + (num-1)*14;
+    strncpy(output, pt, 14);
+    printf("%s\n",output);
+    return 0;
+}

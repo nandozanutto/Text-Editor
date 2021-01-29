@@ -14,6 +14,7 @@
 #include <sys/ioctl.h>
 #include <linux/if.h>
 #include <errno.h>
+#include <sys/stat.h>
 extern int errno ;
 
 
@@ -117,6 +118,7 @@ int linhaServer(int Soquete, Package inMessage1){
       
   }
   
+  fclose(file);
 
 }
 
@@ -188,6 +190,7 @@ int linhasServer(int Soquete, Package inMessage1){
             printf("Nack received");
         
     }
+    fclose(file);
   }
 
   assignMessage(&outMessage, 'S', "", 0, 13, 0);
@@ -274,7 +277,83 @@ int verServer(int Soquete, Package inMessage1){
   }
 
 
+  fclose(file);
 
+
+}
+
+int editServer(int Soquete, Package inMessage1){
+  Package inMessage, outMessage;
+  copyMessage(&inMessage1, &inMessage);
+  int reply=0, result=0, count=0;
+  unsigned char string[100];//ATTENTION TO SIZE OF THIS STRING
+  unsigned char nameFIle[100];//ATTENTION TO SIZE
+  int lineNumber;
+
+
+  puts(inMessage.Dados);//Name of file
+  strcpy(nameFIle, inMessage.Dados);
+  
+  while(1){  
+    //2 MESSAGE: reply
+    if(errorMessage(inMessage) < 0){//NACK
+      sendNACK(Soquete, 'S');
+    } else {
+      sendACK(Soquete, 'S');//ACK
+    }
+    reply = waitForMessage(Soquete, &inMessage, 1);
+    if(reply!=0){ 
+      sendError(Soquete, reply, 'S');
+      return -1;
+    }
+    if(inMessage.Tipo == 10)
+      break;
+  } 
+  puts(inMessage.Dados);//Number of line
+  lineNumber = atoi(inMessage.Dados);
+
+  
+  while(1){  
+    //2 MESSAGE: reply
+    if(errorMessage(inMessage) < 0){//NACK
+      sendNACK(Soquete, 'S');
+    } else {
+      sendACK(Soquete, 'S');//ACK
+    }
+    reply = waitForMessage(Soquete, &inMessage, 1);
+    if(reply!=0){ 
+      sendError(Soquete, reply, 'S');
+      return -1;
+    }
+    if(inMessage.Tipo == 12)
+      break;
+  } 
+
+  strcat(string, inMessage.Dados);
+  // printf("%s", inMessage.Dados);
+
+  while(1){
+    while(1){  
+        //MESSAGE 5: reply
+        if(errorMessage(inMessage) < 0){//NACK
+            sendNACK(Soquete, 'S');
+        } else {
+            sendACK(Soquete, 'S');//ACK
+        }
+        waitForMessage(Soquete, &inMessage, 1);
+        if(inMessage.Tipo == 12 || inMessage.Tipo == 13)
+            break;
+    }
+    if(inMessage.Tipo == 13){
+        sendACK(Soquete, 'S');
+        break;
+    }
+    strcat(string, inMessage.Dados);
+    // printf("%s", inMessage.Dados);
+  }
+  printf("%s %d\n", string, lineNumber);
+  editLine(nameFIle, string, lineNumber);
+  chmod(nameFIle, 0777);
 
 }
 
@@ -300,6 +379,10 @@ void serverBehavior(int Soquete){
       
       case 4:
         linhasServer(Soquete, inMessage);
+        break;
+
+      case 5:
+        editServer(Soquete, inMessage);
         break;
 
       default:
@@ -332,10 +415,6 @@ int main(){
         exit(1);
     }
     
-    // token= strtok(inputString, s);
-    // printf("%s\n", token );
-    // token = strtok(NULL, s);
-    // printf("%s\n", token );
 
     serverBehavior(Soquete);
 

@@ -14,6 +14,7 @@
 #include <sys/ioctl.h>
 #include <linux/if.h>
 #include <errno.h>
+#include <math.h>
 extern int errno ;
 
 int cdClient(int Soquete, unsigned char * inputString){
@@ -151,11 +152,92 @@ int verClient(int Soquete, unsigned char *inputString){
 
 }
 
+int editClient(int Soquete, unsigned char *inputString, unsigned char *inputString2, unsigned char *lineNumber){
+    int reply=0, result=0, count=1;
+    Package outMessage, inMessage;
+    assignMessage(&outMessage, 'C', inputString, 10, 5, 0);
+    unsigned char string[15];
+
+    while(1){
+        /*MESSAGE 1: 0011
+        Keep sending message ultil ACK or error isn't received*/
+        sendMessage(Soquete, &outMessage);
+        reply = waitForAnswer(Soquete, &inMessage, 2);
+        if(reply == 0 && inMessage.Tipo == 8){//ACK
+            break;
+        }
+        if(reply == 0 && inMessage.Tipo == 15){//ERROR
+            printf("Error on server, %s\n", strerror(inMessage.Dados[0]));
+            return -1;
+        }
+        if(reply == 0 && inMessage.Tipo == 9)//NACK
+            printf("Nack received");
+        
+    }
+
+    assignMessage(&outMessage, 'C', lineNumber, 10, 10, 0);
+    while(1){
+        /*MESSAGE 1: 0011
+        Keep sending message ultil ACK or error isn't received*/
+        sendMessage(Soquete, &outMessage);
+        reply = waitForAnswer(Soquete, &inMessage, 2);
+        if(reply == 0 && inMessage.Tipo == 8){//ACK
+            break;
+        }
+        if(reply == 0 && inMessage.Tipo == 15){//ERROR
+            printf("Error on server, %s\n", strerror(inMessage.Dados[0]));
+            return -1;
+        }
+        if(reply == 0 && inMessage.Tipo == 9)//NACK
+            printf("Nack received");
+        
+    }
+
+    
+    while(1){    
+        result = cutString(inputString2, string, count);
+        if(result < 0) break;
+        assignMessage(&outMessage, 'C', string, 10, 12, 0);
+        while(1){
+            /*MESSAGE 1: 0011
+            Keep sending message ultil ACK or error isn't received*/
+            sendMessage(Soquete, &outMessage);
+            reply = waitForAnswer(Soquete, &inMessage, 2);
+            if(reply == 0 && inMessage.Tipo == 8){//ACK
+                break;
+            }
+            if(reply == 0 && inMessage.Tipo == 9)//NACK
+                printf("Nack received");
+        }
+        count++;
+    }
+    
+    assignMessage(&outMessage, 'C', "", 0, 13, 0);
+    while(1){
+      /*MESSAGE 1: 1101
+      Keep sending message ultil ACK isn't received*/
+      sendMessage(Soquete, &outMessage);
+      reply = waitForAnswer(Soquete, &inMessage, 2);
+      if(reply == 0 && inMessage.Tipo == 8){//ACK
+          return 0;
+      }
+      if(reply == 0 && inMessage.Tipo == 9)//NACK
+          printf("Nack received");
+      
+  }
+
+}
+
 int main(){
 
     int Soquete;
     Soquete = ConexaoRawSocket("lo");
     Package outMessage, inMessage;
+    unsigned char lineNumber[15] = "2188";
+    unsigned char teste[] = "nandofelizdavidhahahahdwyuhdfywfrawu123";
+    unsigned char *pointer;
+    unsigned char string[15];
+    int i=1;
 
     setvbuf (stdout, 0, _IONBF, 0);
     
@@ -167,8 +249,8 @@ int main(){
         exit(1);
     }
 
-    verClient(Soquete, inputString);
-
+    editClient(Soquete, inputString, teste, lineNumber);
+    // cutString(teste, string, 2);
 
     return 0;
 }

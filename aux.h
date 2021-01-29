@@ -12,7 +12,7 @@ int sendNACK(int Soquete, char origem);
 int sendMessage(int Soquete, Package * outMessage);
 int waitForMessage(int Soquete, Package * inMessage, int origemExpect);
 int waitForAnswer(int Soquete, Package * inMessage, int origemExpect);
-// int waitForAnswer();
-// int waitForAnswer(int Soquete, Package * inMessage);
+int cutString(unsigned char * input, unsigned char *output, int num);
+
 
 #endif
