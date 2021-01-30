@@ -24,10 +24,10 @@ int cdClient(int Soquete, unsigned char * inputString){
     
     while(1){
         sendMessage(Soquete, &outMessage);
-        printf("Data sent: '%s'\n", outMessage.Dados);
+        // printf("Data sent: '%s'\n", outMessage.Dados);
         reply = waitForAnswer(Soquete, &inMessage, 2);
         if(reply == 0 && inMessage.Tipo == 8){//ACK
-            printf("Success\n");
+            // printf("Success\n");
             return 0;
         }
         if(reply == 0 && inMessage.Tipo == 15){//ERROR
@@ -124,7 +124,7 @@ int verClient(int Soquete, unsigned char *inputString){
             printf("Nack received");
         
     }
-    printf("1-%s", inMessage.Dados);
+    printf("1 %s", inMessage.Dados);
     while(1){
         while(1){  
             //MESSAGE 5: reply
@@ -228,6 +228,50 @@ int editClient(int Soquete, unsigned char *inputString, unsigned char *inputStri
 
 }
 
+int lsClient(int Soquete){
+    int reply=0, count=2;
+    Package outMessage, inMessage;
+    assignMessage(&outMessage, 'C', "", 10, 1, 0);
+
+    while(1){
+        /*MESSAGE 1: 0011
+        Keep sending message ultil ACK or error isn't received*/
+        sendMessage(Soquete, &outMessage);
+        reply = waitForAnswer(Soquete, &inMessage, 2);
+        if(reply == 0 && inMessage.Tipo == 12){//FIRST TEXT MESSAGE AS ACK
+            break;
+        }
+        if(reply == 0 && inMessage.Tipo == 15){//ERROR
+            printf("Error on server, %s\n", strerror(inMessage.Dados[0]));
+            return -1;
+        }
+        if(reply == 0 && inMessage.Tipo == 9)//NACK
+            printf("Nack received");
+        
+    }
+    printf("%s", inMessage.Dados);
+    while(1){
+        while(1){  
+            //MESSAGE 5: reply
+            if(errorMessage(inMessage) < 0){//NACK
+                sendNACK(Soquete, 'C');
+            } else {
+                sendACK(Soquete, 'C');//ACK
+            }
+            waitForMessage(Soquete, &inMessage, 2);
+            if(inMessage.Tipo == 12 || inMessage.Tipo == 13)
+                break;
+        }
+        if(inMessage.Tipo == 13){
+            sendACK(Soquete, 'C');
+            return 0;
+        }
+        printf("%s", inMessage.Dados);
+        
+    }
+
+}
+
 int main(){
 
     int Soquete;
@@ -249,8 +293,6 @@ int main(){
         exit(1);
     }
 
-    editClient(Soquete, inputString, teste, lineNumber);
-    // cutString(teste, string, 2);
 
     return 0;
 }
