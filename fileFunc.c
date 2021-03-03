@@ -90,5 +90,6 @@ int editLine(char * path, char * newline, int line){
     rename("replace.tmp", path);
 
     printf("\nSuccessfully replaced '%d' line with '%s'.", line, newline);
+    return 0;
 
 }

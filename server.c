@@ -72,7 +72,7 @@ int linhaServer(int Soquete, Package inMessage1){
   readLine(file, lineReading);
 
 
-  assignMessage(&outMessage, 'S', lineReading, 0, 12, 0);
+  assignMessage(&outMessage, 'S', lineReading, 12, 0);
   while(1){  
     //4 MESSAGE: reply with text or NACK
     if(errorMessage(inMessage) < 0){//NACK
@@ -88,7 +88,7 @@ int linhaServer(int Soquete, Package inMessage1){
   while(1){   
     result = readLine(file, lineReading);
     if(result == -1) break;
-    assignMessage(&outMessage, 'S', lineReading, 0, 12, 0);  
+    assignMessage(&outMessage, 'S', lineReading, 12, 0);  
     while(1){
         /*MESSAGE 7: 1100
         Keep sending message ultil ACK isn't received*/
@@ -103,7 +103,7 @@ int linhaServer(int Soquete, Package inMessage1){
     }
     if(result == -2) break;//line breaker
   }
-    assignMessage(&outMessage, 'S', "", 0, 13, 0);
+    assignMessage(&outMessage, 'S', "", 13, 0);
     
     while(1){
       /*MESSAGE 1: 1101
@@ -111,6 +111,7 @@ int linhaServer(int Soquete, Package inMessage1){
       sendMessage(Soquete, &outMessage);
       reply = waitForAnswer(Soquete, &inMessage, 1);
       if(reply == 0 && inMessage.Tipo == 8){//ACK
+          fclose(file);
           return 0;
       }
       if(reply == 0 && inMessage.Tipo == 9)//NACK
@@ -118,7 +119,6 @@ int linhaServer(int Soquete, Package inMessage1){
       
   }
   
-  fclose(file);
 
 }
 
@@ -128,6 +128,7 @@ int linhasServer(int Soquete, Package inMessage1){
   copyMessage(&inMessage1, &inMessage);
   int reply=0, lineNumber1=0, result=0, lineNumber2=0, count=0;
   unsigned char lineReading[15];
+  unsigned char aux[15]; 
   char *token;
   const char s[2] = " ";
 
@@ -150,7 +151,8 @@ int linhasServer(int Soquete, Package inMessage1){
       break;
   }
 
-  token= strtok(inMessage.Dados, s);
+  strcpy(aux, inMessage.Dados);
+  token= strtok(aux, s);
   lineNumber1 = atoi(token);
   token = strtok(NULL, s);
   lineNumber2 = atoi(token);
@@ -159,10 +161,11 @@ int linhasServer(int Soquete, Package inMessage1){
   goLine(file, lineNumber1);
   result = readLine(file, lineReading);
   if(result == -2) count++;//line breaker  
-  assignMessage(&outMessage, 'S', lineReading, 0, 12, 0);
+  assignMessage(&outMessage, 'S', lineReading, 12, 0);
   while(1){  
     //4 MESSAGE: reply with text or NACK
     if(errorMessage(inMessage) < 0){//NACK
+      printf("aqui");
       sendNACK(Soquete, 'S');
     } else {
         sendMessage(Soquete, &outMessage);//FIRST TEXT AS AN ACK
@@ -175,7 +178,7 @@ int linhasServer(int Soquete, Package inMessage1){
   while(1){   
     result = readLine(file, lineReading);
     if(result == -1) break;
-    assignMessage(&outMessage, 'S', lineReading, 0, 12, 0);  
+    assignMessage(&outMessage, 'S', lineReading, 12, 0);  
     if(count == (lineNumber2-lineNumber1 + 1)) break;
     if(result == -2) count++;//line breaker
     while(1){
@@ -190,10 +193,10 @@ int linhasServer(int Soquete, Package inMessage1){
             printf("Nack received");
         
     }
-    fclose(file);
+    
   }
 
-  assignMessage(&outMessage, 'S', "", 0, 13, 0);
+  assignMessage(&outMessage, 'S', "", 13, 0);
     
     while(1){
       /*MESSAGE 1: 1101
@@ -201,6 +204,7 @@ int linhasServer(int Soquete, Package inMessage1){
       sendMessage(Soquete, &outMessage);
       reply = waitForAnswer(Soquete, &inMessage, 1);
       if(reply == 0 && inMessage.Tipo == 8){//ACK
+          fclose(file);
           return 0;
       }
       if(reply == 0 && inMessage.Tipo == 9)//NACK
@@ -225,7 +229,7 @@ int verServer(int Soquete, Package inMessage1){
   
   goLine(file, 1);
   result = readLine(file, lineReading);
-  assignMessage(&outMessage, 'S', lineReading, 0, 12, 0);
+  assignMessage(&outMessage, 'S', lineReading, 12, 0);
   
   while(1){  
     //2 MESSAGE: reply
@@ -246,7 +250,7 @@ int verServer(int Soquete, Package inMessage1){
   while(1){   
     result = readLine(file, lineReading);
     if(result == -1) break;
-    assignMessage(&outMessage, 'S', lineReading, 0, 12, 0);  
+    assignMessage(&outMessage, 'S', lineReading, 12, 0);  
     while(1){
         /*MESSAGE 7: 1100
         Keep sending message ultil ACK isn't received*/
@@ -261,7 +265,7 @@ int verServer(int Soquete, Package inMessage1){
     }
   }
 
-  assignMessage(&outMessage, 'S', "", 0, 13, 0);
+  assignMessage(&outMessage, 'S', "", 13, 0);
     
   while(1){
     /*MESSAGE 1: 1101
@@ -269,15 +273,13 @@ int verServer(int Soquete, Package inMessage1){
     sendMessage(Soquete, &outMessage);
     reply = waitForAnswer(Soquete, &inMessage, 1);
     if(reply == 0 && inMessage.Tipo == 8){//ACK
+        fclose(file);
         return 0;
     }
     if(reply == 0 && inMessage.Tipo == 9)//NACK
         printf("Nack received");
       
   }
-
-
-  fclose(file);
 
 
 }
@@ -354,6 +356,8 @@ int editServer(int Soquete, Package inMessage1){
   printf("%s %d\n", string, lineNumber);
   editLine(nameFIle, string, lineNumber);
   chmod(nameFIle, 0777);
+  strcpy(string, "");
+  return 0;
 
 }
 
@@ -367,7 +371,7 @@ int lsServer(int Soquete, Package inMessage1){
   file  = popen("ls", "r");
   
   result = readLine(file, lineReading);
-  assignMessage(&outMessage, 'S', lineReading, 0, 12, 0);
+  assignMessage(&outMessage, 'S', lineReading, 11, 0);
   
   while(1){  
     //2 MESSAGE: reply
@@ -388,7 +392,7 @@ int lsServer(int Soquete, Package inMessage1){
   while(1){   
     result = readLine(file, lineReading);
     if(result == -1) break;
-    assignMessage(&outMessage, 'S', lineReading, 0, 12, 0);  
+    assignMessage(&outMessage, 'S', lineReading, 11, 0);  
     while(1){
         /*MESSAGE 7: 1100
         Keep sending message ultil ACK isn't received*/
@@ -403,7 +407,7 @@ int lsServer(int Soquete, Package inMessage1){
     }
   }
 
-  assignMessage(&outMessage, 'S', "", 0, 13, 0);
+  assignMessage(&outMessage, 'S', "", 13, 0);
     
   while(1){
     /*MESSAGE 1: 1101
@@ -411,6 +415,7 @@ int lsServer(int Soquete, Package inMessage1){
     sendMessage(Soquete, &outMessage);
     reply = waitForAnswer(Soquete, &inMessage, 1);
     if(reply == 0 && inMessage.Tipo == 8){//ACK
+        pclose(file);
         return 0;
     }
     if(reply == 0 && inMessage.Tipo == 9)//NACK
@@ -418,8 +423,6 @@ int lsServer(int Soquete, Package inMessage1){
       
   }
 
-
-  pclose(file);
 }
 
 void serverBehavior(int Soquete){
@@ -484,7 +487,8 @@ int main(){
         exit(1);
     }
     
-    serverBehavior(Soquete);
+    while(1)
+      serverBehavior(Soquete);
 
 
 

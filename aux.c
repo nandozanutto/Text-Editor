@@ -16,6 +16,17 @@
 extern int errno ;
 
 int errorMessage(Package inMessage){
+    unsigned char seq1;
+	unsigned char seq2;
+	unsigned char paridade;
+    seq1 =  (inMessage.Origem<<6) | (inMessage.Destino<<4) | inMessage.Tipo;
+	seq2 = (inMessage.Sequencia<<4) | inMessage.Tamanho;
+	paridade = seq1 ^ seq2;
+	for(int i=0; i<strlen(inMessage.Dados); i++)
+		paridade ^= inMessage.Dados[i];
+    
+    if(inMessage.Paridade != paridade)
+        return -1;
     return 0;
 }
 
@@ -26,7 +37,7 @@ int sendError(int Soquete, int numError, char origem){
     dados[0] = numError;
     
     if(numError > 255) return -1;
-    assignMessage(&outMessage, origem, dados, 0, 15, 0);
+    assignMessage(&outMessage, origem, dados, 15, 0);
     sendMessage(Soquete, &outMessage);
 }
 
@@ -35,7 +46,7 @@ int sendACK(int Soquete, char origem){
     unsigned char dados[15];
     memset(dados, 0, 15);
 
-    assignMessage(&outMessage, origem, dados, 0, 8, 0);
+    assignMessage(&outMessage, origem, dados, 8, 0);
     sendMessage(Soquete, &outMessage);
 }
 
@@ -44,7 +55,7 @@ int sendNACK(int Soquete, char origem){
     unsigned char dados[15];
     memset(dados, 0, 15);
 
-    assignMessage(&outMessage, origem, dados, 0, 9, 0);
+    assignMessage(&outMessage, origem, dados, 9, 0);
     sendMessage(Soquete, &outMessage);
 }
 
