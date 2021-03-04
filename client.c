@@ -302,20 +302,21 @@ int lsClient(int Soquete){
 
 }
 
+
 int main(){
 
     int Soquete;
+    char inputString[1045] = "cd nando ahola";
+    char command[15];
+    char param1[15];
+    char param2[15];
+    char param3[1000];
+    int cont=0;
+    const char s[2] = " ";
     Soquete = ConexaoRawSocket("lo");
     Package outMessage, inMessage;
-    unsigned char lineNumber[15] = "2188";
-    unsigned char teste[] = "nandofelizdavidhahahahdwyuhdfywfrawu123";
-    unsigned char *pointer;
-    unsigned char string[15];
-    int i=1;
 
     setvbuf (stdout, 0, _IONBF, 0);
-    
-    unsigned char inputString[] = "alice.txt";
     
     if (Soquete == -1)
     {
@@ -323,7 +324,44 @@ int main(){
         exit(1);
     }
     
-    editClient(Soquete, inputString, "helllo", "1");
+    
+    fgets(inputString, 1045, stdin);      
+    inputString[strcspn(inputString, "\n")] = 0;//Removing the '\n' caracter  
+    char *token = strtok(inputString, " ");
+    while (token != NULL) 
+    { 
+            switch (cont)
+            {
+            case 0:
+                    strcpy(command, token);
+                    break;
+            
+            case 1:
+                    strcpy(param1, token);
+                    break;
+            case 2:
+                    strcpy(param2, token);
+                    break;
+            case 3:
+                    strcpy(param3, token);
+                    break;
+            default:
+                    printf("Too many arguments\n");
+                    break;
+            }
+            token = strtok(NULL, " "); 
+            cont++;
+    } 
+
+    if(!strcmp(command, "CD"))
+        cdClient(Soquete, param1);
+
+
+
+
+    // if (param1[0] == '\0')
+    //     printf("yes");
 
     return 0;
+
 }
