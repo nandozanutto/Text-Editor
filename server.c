@@ -69,7 +69,7 @@ int linhaServer(int Soquete, Package inMessage1){
   puts(inMessage.Dados);//Number of line
   lineNumber = atoi(inMessage.Dados);
   goLine(file, lineNumber);
-  readLine(file, lineReading);
+  int aux = readLine(file, lineReading);
 
 
   assignMessage(&outMessage, 'S', lineReading, 12, 0);
@@ -86,6 +86,7 @@ int linhaServer(int Soquete, Package inMessage1){
   }
   
   while(1){   
+    if(aux==-1 || aux==-2) break; //already finished reading line
     result = readLine(file, lineReading);
     if(result == -1) break;
     assignMessage(&outMessage, 'S', lineReading, 12, 0);  
@@ -103,19 +104,19 @@ int linhaServer(int Soquete, Package inMessage1){
     }
     if(result == -2) break;//line breaker
   }
-    assignMessage(&outMessage, 'S', "", 13, 0);
+  assignMessage(&outMessage, 'S', "", 13, 0);
     
-    while(1){
-      /*MESSAGE 1: 1101
-      Keep sending message ultil ACK isn't received*/
-      sendMessage(Soquete, &outMessage);
-      reply = waitForAnswer(Soquete, &inMessage, 1);
-      if(reply == 0 && inMessage.Tipo == 8){//ACK
-          fclose(file);
-          return 0;
-      }
-      if(reply == 0 && inMessage.Tipo == 9)//NACK
-          printf("Nack received");
+  while(1){
+    /*MESSAGE 1: 1101
+    Keep sending message ultil ACK isn't received*/
+    sendMessage(Soquete, &outMessage);
+    reply = waitForAnswer(Soquete, &inMessage, 1);
+    if(reply == 0 && inMessage.Tipo == 8){//ACK
+        fclose(file);
+        return 0;
+    }
+    if(reply == 0 && inMessage.Tipo == 9)//NACK
+        printf("Nack received");
       
   }
   
@@ -165,7 +166,6 @@ int linhasServer(int Soquete, Package inMessage1){
   while(1){  
     //4 MESSAGE: reply with text or NACK
     if(errorMessage(inMessage) < 0){//NACK
-      printf("aqui");
       sendNACK(Soquete, 'S');
     } else {
         sendMessage(Soquete, &outMessage);//FIRST TEXT AS AN ACK
@@ -291,7 +291,8 @@ int editServer(int Soquete, Package inMessage1){
   unsigned char string[100];//ATTENTION TO SIZE OF THIS STRING
   unsigned char nameFIle[100];//ATTENTION TO SIZE
   int lineNumber;
-
+  memset(string,0,sizeof(string));
+  resetMessage(&outMessage);
 
   puts(inMessage.Dados);//Name of file
   strcpy(nameFIle, inMessage.Dados);
@@ -354,9 +355,9 @@ int editServer(int Soquete, Package inMessage1){
     // printf("%s", inMessage.Dados);
   }
   printf("%s %d\n", string, lineNumber);
-  editLine(nameFIle, string, lineNumber);
+  if(editLine(nameFIle, string, lineNumber) == -1)
+    return -1;
   chmod(nameFIle, 0777);
-  strcpy(string, "");
   return 0;
 
 }
@@ -473,11 +474,8 @@ void serverBehavior(int Soquete){
 
 int main(){
     int Soquete;
-    Package outMessage, inMessage;
     Soquete = ConexaoRawSocket("lo");
-    unsigned char inputString[15] = "127 15";
-    char *token;
-    const char s[2] = " ";
+
     
     setvbuf (stdout, 0, _IONBF, 0);
 

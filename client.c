@@ -134,7 +134,7 @@ int linhasClient(int Soquete, unsigned char *inputString, unsigned char *lines){
 }
 
 int verClient(int Soquete, unsigned char *inputString){
-    int reply=0, count=2;
+    int reply=0, count=3;
     Package outMessage, inMessage;
     assignMessage(&outMessage, 'C', inputString, 2, 0);
 
@@ -154,7 +154,7 @@ int verClient(int Soquete, unsigned char *inputString){
             printf("Nack received");
         
     }
-    printf("1 %s", inMessage.Dados);
+    printf("1 %s2 ", inMessage.Dados);
     while(1){
         while(1){  
             //MESSAGE 5: reply
@@ -169,6 +169,7 @@ int verClient(int Soquete, unsigned char *inputString){
         }
         if(inMessage.Tipo == 13){
             sendACK(Soquete, 'C');
+            printf("\n");
             return 0;
         }
         if(strchr(inMessage.Dados, '\n')!=NULL){
@@ -302,10 +303,8 @@ int lsClient(int Soquete){
 
 }
 
-
-int main(){
-
-    int Soquete;
+void clientBehavior(int Soquete){
+    
     char inputString[1045];
     char notText[1045];
     char command[15];
@@ -314,20 +313,7 @@ int main(){
     char param3[15];
     char text[1000];
     int cont=0;
-    const char s[2] = " ";
     char *token;
-    
-    Soquete = ConexaoRawSocket("lo");
-    Package outMessage, inMessage;
-
-    setvbuf (stdout, 0, _IONBF, 0);
-    
-    if (Soquete == -1)
-    {
-        perror("Erro no soquete\n");
-        exit(1);
-    }
-    
     
     fgets(inputString, 1045, stdin);      
     inputString[strcspn(inputString, "\n")] = 0;//Removing the '\n' caracter  
@@ -388,11 +374,36 @@ int main(){
         editClient(Soquete, param2, text, param1); 
     else
         printf("command not found\n");
-         
+    
+    memset(inputString,0,sizeof(inputString));
+    memset(notText,0,sizeof(notText));
+    memset(command,0,sizeof(command));
+    memset(param1,0,sizeof(param1));
+    memset(param2,0,sizeof(param2));
+    memset(param3,0,sizeof(param3));
+    memset(text,0,sizeof(text));
+    cont = 0;
+    token = NULL;
+}
+
+int main(){
+
+    int Soquete;
+
+    Soquete = ConexaoRawSocket("lo");
+
+    setvbuf (stdout, 0, _IONBF, 0);
+    
+    if (Soquete == -1)
+    {
+        perror("Erro no soquete\n");
+        exit(1);
+    }
+    
+    while(1)
+        clientBehavior(Soquete);
 
 
-    // if (param1[0] == '\0')
-    //     printf("yes");
     return 0;
 
 }

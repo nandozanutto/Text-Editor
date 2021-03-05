@@ -60,7 +60,7 @@ int editLine(char * path, char * newline, int line){
         /* Unable to open file hence exit */
         printf("\nUnable to open file.\n");
         printf("Please check whether file exists and you have read/write privilege.\n");
-        exit(EXIT_SUCCESS);
+        return -1;
     }
 
     

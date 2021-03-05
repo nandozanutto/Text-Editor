@@ -129,6 +129,5 @@ int cutString(unsigned char * input, unsigned char *output, int num){
 
     pt = input + (num-1)*14;
     strncpy(output, pt, 14);
-    printf("%s\n",output);
     return 0;
 }
