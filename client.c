@@ -306,13 +306,17 @@ int lsClient(int Soquete){
 int main(){
 
     int Soquete;
-    char inputString[1045] = "cd nando ahola";
+    char inputString[1045];
+    char notText[1045];
     char command[15];
     char param1[15];
     char param2[15];
-    char param3[1000];
+    char param3[15];
+    char text[1000];
     int cont=0;
     const char s[2] = " ";
+    char *token;
+    
     Soquete = ConexaoRawSocket("lo");
     Package outMessage, inMessage;
 
@@ -327,7 +331,17 @@ int main(){
     
     fgets(inputString, 1045, stdin);      
     inputString[strcspn(inputString, "\n")] = 0;//Removing the '\n' caracter  
-    char *token = strtok(inputString, " ");
+    
+    if(strchr(inputString, '"')){
+        token = strtok(inputString, "\"");
+        strcpy(notText, token);
+        token = strtok(NULL, "\"");
+        strcpy(text, token);
+        token = strtok(notText, " ");
+    }
+    else
+        token = strtok(inputString, " ");
+    
     while (token != NULL) 
     { 
             switch (cont)
@@ -345,6 +359,7 @@ int main(){
             case 3:
                     strcpy(param3, token);
                     break;
+                    
             default:
                     printf("Too many arguments\n");
                     break;
@@ -352,16 +367,32 @@ int main(){
             token = strtok(NULL, " "); 
             cont++;
     } 
-
-    if(!strcmp(command, "CD"))
+    if(!strcmp(command, "cd") && cont==2)
         cdClient(Soquete, param1);
-
-
+    else if(!strcmp(command, "lcd") && cont==2)
+        lcdClient(param1);
+    else if(!strcmp(command, "ls") && cont==1)
+        lsClient(Soquete);
+    else if(!strcmp(command, "lls") && cont==1)
+        llsClient(Soquete);
+    else if(!strcmp(command, "ver") && cont==2)
+        verClient(Soquete, param1);
+    else if(!strcmp(command, "linha") && cont==3)
+        linhaClient(Soquete, param2, param1, 3);//bug when line is empty
+    else if(!strcmp(command, "linhas") && cont==4){
+        strcat(param1, " ");
+        strcat(param1, param2);
+        linhasClient(Soquete, param3, param1);
+    }
+    else if(!strcmp(command, "edit") && cont==3)
+        editClient(Soquete, param2, text, param1); 
+    else
+        printf("command not found\n");
+         
 
 
     // if (param1[0] == '\0')
     //     printf("yes");
-
     return 0;
 
 }
