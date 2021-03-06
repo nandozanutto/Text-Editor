@@ -5,6 +5,7 @@
 #define BUFFER_SIZE 2000
 
 int goLine(FILE *file, int num){
+    if(file == NULL) return -1;
     char line[BUFFER_SIZE]; //attention to maximum line size
     int count=2;
     
@@ -24,6 +25,7 @@ int goLine(FILE *file, int num){
 }
 
 int readLine(FILE *file, unsigned char * str){
+    if(file == NULL) return -1;
     memset(str, 0, 15);//putting zeros
     const char ch = '\n';
     if(fgets (str, 15, file) == NULL)

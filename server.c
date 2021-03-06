@@ -52,16 +52,16 @@ int linhaServer(int Soquete, Package inMessage1){
   
   while(1){  
     //2 MESSAGE: reply
+    if(file==NULL){
+      sendError(Soquete, errno, 'S');
+      return -1;
+    }
     if(errorMessage(inMessage) < 0){//NACK
       sendNACK(Soquete, 'S');
     } else {
       sendACK(Soquete, 'S');//ACK
     }
-    reply = waitForMessage(Soquete, &inMessage, 1);
-    if(reply!=0){ 
-      sendError(Soquete, reply, 'S');
-      return -1;
-    }
+    waitForMessage(Soquete, &inMessage, 1);
     if(inMessage.Tipo == 10)
       break;
   }
@@ -138,16 +138,16 @@ int linhasServer(int Soquete, Package inMessage1){
   
   while(1){  
     //2 MESSAGE: reply
+    if(file==NULL){
+      sendError(Soquete, errno, 'S');
+      return -1;
+    }
     if(errorMessage(inMessage) < 0){//NACK
       sendNACK(Soquete, 'S');
     } else {
       sendACK(Soquete, 'S');//ACK
     }
-    reply = waitForMessage(Soquete, &inMessage, 1);
-    if(reply!=0){ 
-      sendError(Soquete, reply, 'S');
-      return -1;
-    }
+    waitForMessage(Soquete, &inMessage, 1);
     if(inMessage.Tipo == 10)
       break;
   }
@@ -226,13 +226,16 @@ int verServer(int Soquete, Package inMessage1){
 
   puts(inMessage.Dados);//Name of file
   file  = fopen(inMessage.Dados, "r");
-  
   goLine(file, 1);
   result = readLine(file, lineReading);
   assignMessage(&outMessage, 'S', lineReading, 12, 0);
   
   while(1){  
     //2 MESSAGE: reply
+    if(file==NULL){
+      sendError(Soquete, errno, 'S');
+      return -1;
+    }
     if(errorMessage(inMessage) < 0){//NACK
       sendNACK(Soquete, 'S');
     } else {
