@@ -294,14 +294,20 @@ int editServer(int Soquete, Package inMessage1){
   unsigned char string[100];//ATTENTION TO SIZE OF THIS STRING
   unsigned char nameFIle[100];//ATTENTION TO SIZE
   int lineNumber;
+  FILE *teste;
   memset(string,0,sizeof(string));
   resetMessage(&outMessage);
 
   puts(inMessage.Dados);//Name of file
   strcpy(nameFIle, inMessage.Dados);
-  
+  teste = fopen(nameFIle, "r");
+
   while(1){  
     //2 MESSAGE: reply
+    if(teste == NULL){
+      sendError(Soquete, errno, 'S');
+      return -1;
+    } else fclose(teste);
     if(errorMessage(inMessage) < 0){//NACK
       sendNACK(Soquete, 'S');
     } else {
