@@ -7,6 +7,7 @@
 
 
 int goLine(FILE *file, int num);
+int countLines(FILE *file);
 int readLine(FILE *file, unsigned char * str);
 int editLine(char * path, char * newline, int line);
 

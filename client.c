@@ -315,6 +315,7 @@ void clientBehavior(int Soquete){
     int cont=0;
     char *token;
     
+    printf("\n-> ");
     fgets(inputString, 1045, stdin);      
     inputString[strcspn(inputString, "\n")] = 0;//Removing the '\n' caracter  
     

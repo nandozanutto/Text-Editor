@@ -24,6 +24,17 @@ int goLine(FILE *file, int num){
 
 }
 
+int countLines(FILE *file){
+    int count = 0; 
+    char c;  
+    if(file == NULL) return -1;
+    
+    for (c = getc(file); c != EOF; c = getc(file)) 
+        if (c == '\n') // Increment count if this character is newline 
+            count = count + 1;
+    return count+1;
+}
+
 int readLine(FILE *file, unsigned char * str){
     if(file == NULL) return -1;
     memset(str, 0, 15);//putting zeros
@@ -52,6 +63,7 @@ int editLine(char * path, char * newline, int line){
     FILE * fTemp;
     int count = 0;
     char buffer[BUFFER_SIZE];
+    int numFinalLine=0;
 
     fPtr  = fopen(path, "r");
     fTemp = fopen("replace.tmp", "w");
@@ -64,14 +76,18 @@ int editLine(char * path, char * newline, int line){
         printf("Please check whether file exists and you have read/write privilege.\n");
         return -1;
     }
-
     
+    numFinalLine = countLines(fPtr);
+    goLine(fPtr, 1);
     while ((fgets(buffer, BUFFER_SIZE, fPtr)) != NULL)
     {
         count++;
 
         /* If current line is line to replace */
-        if (count == line){
+        if((count == line) && (line == numFinalLine)){
+            fputs(newline, fTemp);
+        }
+        else if (count == line){
             fputs(newline, fTemp);
             fputc('\n', fTemp);
         }
